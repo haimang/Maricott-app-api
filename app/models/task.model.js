@@ -21,6 +21,15 @@ const Task = function(task) {
 
 Task.create = (newTask, result) => {
   console.log("create task:" + newTask);
+  if(newTask.task_id.indexOf(".") == -1) {
+    newTask.main_task_id = newTask.task_id
+    newTask.sub_task_id = 0
+  }
+  else {
+    newTask.main_task_id = newTask.task_id.substring(0, newTask.task_id.indexOf("."))
+    newTask.sub_task_id = newTask.task_id.substring(newTask.task_id.indexOf(".") + 1, newTask.task_id.length)
+  }
+  
   sql.query("INSERT INTO tbl_task SET ?", newTask, (err, res) => {
     if (err) {
       console.log("error: ", err);
@@ -80,7 +89,7 @@ Task.getAll = (project_id, result) => {
     query += ` WHERE project_id = ${project_id}`;
   }
 
-  query += " order by task_id asc"
+  query += " order by main_task_id asc, sub_task_id asc"
 
   sql.query(query, (err, res) => {
     if (err) {
@@ -104,9 +113,18 @@ Task.getAll = (project_id, result) => {
 };
 
 Task.updateById = (id, task, result) => {
+  if(task.task_id.indexOf(".") == -1) {
+    task.main_task_id = task.task_id
+    task.sub_task_id = 0
+  }
+  else {
+    task.main_task_id = task.task_id.substring(0, task.task_id.indexOf("."))
+    task.sub_task_id = task.task_id.substring(task.task_id.indexOf(".") + 1, task.task_id.length)
+  }
+
   sql.query(
-    "UPDATE tbl_task SET title = ?, task_id=? ,start_time = ?, end_time = ?, real_end_time = ?, tbl_task.lead = ?, status = ?, parent_task_id = ?, complete_percent = ?, working_days = ?  WHERE id = ?",
-    [task.title, task.task_id,task.start_time, task.end_time, task.real_end_time, task.lead, task.status, task.parent_task_id, task.complete_percent, task.working_days, id],
+    "UPDATE tbl_task SET title = ?, task_id=? ,start_time = ?, end_time = ?, real_end_time = ?, tbl_task.lead = ?, status = ?, parent_task_id = ?, complete_percent = ?, working_days = ?, main_task_id = ?, sub_task_id = ?  WHERE id = ?",
+    [task.title, task.task_id,task.start_time, task.end_time, task.real_end_time, task.lead, task.status, task.parent_task_id, task.complete_percent, task.working_days, task.main_task_id, task.sub_task_id, id],
     (err, res) => {
       if (err) {
         console.log("error: ", err);
